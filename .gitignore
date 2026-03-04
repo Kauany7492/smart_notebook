@@ -1,0 +1,20 @@
+# Configurações de Ambiente (SEGURANÇA!)
+# Nunca suba o .env, pois ele contém sua GEMINI_API_KEY e senhas do banco.
+.env
+
+# Dependências do Projeto
+# Não é necessário subir a pasta node_modules (ela é gigante). 
+# Quem baixar seu código usará "npm install" para regerá-la.
+node_modules/
+
+# Logs e arquivos temporários
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.DS_Store
+dist/
+build/
+
+# Bancos de Dados locais (caso você use SQLite ou dumps)
+*.sql
+!schema.sql
