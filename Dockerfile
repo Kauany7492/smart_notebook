@@ -15,7 +15,8 @@ RUN npm install --production
 COPY . .
 
 # 6. Informa que a aplicação usa a porta 3000
-EXPOSE 3000
+EXPOSE 4000
 
 # 7. Comando para iniciar o servidor
+
 CMD [ "node", "server.js" ]
