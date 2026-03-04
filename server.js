@@ -112,11 +112,12 @@ app.get('/notebook/:id/podcast', async (req, res) => {
     }
 });
 
-const PORT = 2000;
+const PORT = 4000;
 app.listen(PORT, () => {
     console.log(`
     🚀 Notion AI Online!
     📍 Local: http://localhost:${PORT}
     🌸 Estilo: Notion Clean & Minimalist
     `);
+
 });
