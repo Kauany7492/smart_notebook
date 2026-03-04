@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body class="main-content">
+    <div style="max-width: 800px; margin: 0 auto;">
+        <h1>🎯 Gestão Pessoal</h1>
+        <div style="margin: 20px 0; display: flex; gap: 10px;">
+            <input type="text" id="nbName" placeholder="Novo caderno..." style="flex:1; padding:8px; border:1px solid #ddd; border-radius:4px;">
+            <button onclick="add()" style="background:var(--notion-blue); color:white; border:none; padding:8px 16px; border-radius:4px; cursor:pointer;">Criar</button>
+        </div>
+        <div class="notion-grid">
+            <% notebooks.forEach(nb => { %>
+                <a href="/notebook/<%= nb.id %>" class="notion-card">
+                    <div style="font-size: 24px;">📑</div>
+                    <b><%= nb.name %></b>
+                </a>
+            <% }) %>
+        </div>
+    </div>
+    <script>
+        async function add() {
+            const name = document.getElementById('nbName').value;
+            await fetch('/create-notebook', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({name})});
+            location.reload();
+        }
+    </script>
+</body>
+</html>

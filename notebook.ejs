@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <link rel="stylesheet" href="/style.css">
+</head>
+
+<body>
+    <aside class="sidebar">
+        <div style="font-weight:600; margin-bottom:15px;">🏡 Workspace</div>
+        <a href="/" class="sidebar-item">🏠 Início</a>
+        <a href="/notebook/<%= notebook.id %>/podcast" class="sidebar-item">🎙️ Podcast/PDF</a>
+        <button onclick="start()" id="btn" class="sidebar-item"
+            style="border:none; background:none; text-align:left; cursor:pointer; width:100%;">🎤 Gravar Aula</button>
+    </aside>
+
+    <main class="main-content">
+        <h1>📖 <%= notebook.name %>
+        </h1>
+        <div class="callout"><span>💡</span>
+            <div>Espaço para notas rápidas (Personal Home).</div>
+        </div>
+        <textarea id="quick" class="notion-editor" placeholder="Digite suas observações aqui..."></textarea>
+
+        <table class="action-table">
+            <thead>
+                <tr>
+                    <th>DATA</th>
+                    <th>PLANO DE AÇÃO / NOTAS</th>
+                </tr>
+            </thead>
+            <tbody>
+                <% notes.forEach(n=> { %>
+                    <tr>
+                        <td>
+                            <%= new Date(n.created_at).toLocaleDateString() %>
+                        </td>
+                        <td><%- n.content %></td>
+                    </tr>
+                    <% }) %>
+            </tbody>
+        </table>
+    </main>
+
+    <script>
+        let rec = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+        rec.lang = 'pt-BR';
+        async function start() {
+            let buffer = "";
+            rec.start();
+            document.getElementById('btn').innerText = "⏹️ Parar";
+            rec.onresult = (e) => { for (let i = e.resultIndex; i < e.results.length; i++) buffer += e.results[i][0].transcript; };
+            document.getElementById('btn').onclick = async () => {
+                rec.stop();
+                await fetch(window.location.pathname + '/process', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ transcription: buffer, quickNote: document.getElementById('quick').value })
+                });
+                location.reload();
+            };
+        }
+    </script>
+</body>
+
+</html>

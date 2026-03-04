@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <link rel="stylesheet" href="/style.css">
+</head>
+
+<body class="main-content">
+    <div style="max-width: 700px; margin: 0 auto;">
+        <a href="/notebook/<%= notebook.id %>" style="text-decoration:none; color:var(--notion-blue);">← Voltar</a>
+        <h1>🎙️ Estúdio de Podcast</h1>
+        <div class="callout">Selecione as tarefas do plano de ação para revisar.</div>
+
+        <% notes.forEach((n, i)=> { %>
+            <div style="padding:10px; border-bottom:1px solid #eee;">
+                <input type="checkbox" class="task" value="<%= n.content %>"> Nota de <%= new
+                    Date(n.created_at).toLocaleDateString() %>
+            </div>
+            <% }) %>
+
+                <button onclick="play()"
+                    style="margin-top:20px; background:var(--notion-text); color:white; border:none; padding:10px 20px; border-radius:4px; cursor:pointer;">🎧
+                    Gerar Podcast de Revisão</button>
+    </div>
+    <script>
+        function play() {
+            let txt = "Iniciando revisão. ";
+            document.querySelectorAll('.task:checked').forEach(t => txt += t.value);
+            const u = new SpeechSynthesisUtterance(txt);
+            u.lang = 'pt-BR';
+            window.speechSynthesis.speak(u);
+        }
+    </script>
+</body>
+
+</html>
