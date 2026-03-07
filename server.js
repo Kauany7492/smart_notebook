@@ -112,7 +112,7 @@ app.get('/notebook/:id/podcast', async (req, res) => {
     }
 });
 
-const PORT = 4000;
+const PORT = 3000;
 app.listen(PORT, () => {
     console.log(`
     🚀 Notebook AI Online!
@@ -121,4 +121,5 @@ app.listen(PORT, () => {
     `);
 
 });
+
 
