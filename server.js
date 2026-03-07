@@ -101,6 +101,8 @@ app.delete('/delete-note/:id', async (req, res) => {
     }
 });
 
+app.use(express.static('public')); // Garante que a pasta /public seja visível
+
 // --- ROTA PODCAST REVISÃO ---
 app.get('/notebook/:id/podcast', async (req, res) => {
     try {
@@ -121,5 +123,6 @@ app.listen(PORT, () => {
     `);
 
 });
+
 
 
