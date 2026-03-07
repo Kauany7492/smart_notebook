@@ -1,3 +1,4 @@
+/* Importação da fonte padrão do Notion */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
 :root {
@@ -6,97 +7,160 @@
     --notion-text: #37352f;
     --notion-border: rgba(55, 53, 47, 0.09);
     --notion-blue: #2383e2;
+    --notion-hover: rgba(55, 53, 47, 0.04);
+    --sidebar-width: 240px;
+}
+
+* {
+    box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent; /* Melhora o toque no celular */
 }
 
 body {
     background: var(--notion-bg);
     color: var(--notion-text);
-    font-family: 'Inter', sans-serif;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
     margin: 0;
     display: flex;
+    min-height: 100vh;
+    flex-direction: row; /* Layout padrão: Lado a Lado (Desktop) */
+}
+
+/* --- SIDEBAR --- */
+.sidebar {
+    width: var(--sidebar-width);
+    background: var(--notion-sidebar);
+    border-right: 1px solid var(--notion-border);
+    padding: 24px 12px;
+    display: flex;
+    flex-direction: column;
+    flex-shrink: 0;
+    position: sticky;
+    top: 0;
     height: 100vh;
 }
 
-/* Sidebar Notion */
-.sidebar {
-    width: 240px;
-    background: var(--notion-sidebar);
-    border-right: 1px solid var(--notion-border);
-    padding: 20px 12px;
-    display: flex;
-    flex-direction: column;
+.sidebar-title {
+    font-weight: 600;
+    font-size: 14px;
+    padding: 0 12px 12px;
+    color: rgba(55, 53, 47, 0.5);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
 }
 
 .sidebar-item {
-    padding: 6px 10px;
+    padding: 8px 12px;
     border-radius: 4px;
     text-decoration: none;
     color: var(--notion-text);
     font-size: 14px;
     margin-bottom: 2px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: background 0.2s ease;
+    border: none;
+    background: transparent;
+    width: 100%;
+    text-align: left;
+    cursor: pointer;
 }
 
 .sidebar-item:hover {
-    background: rgba(55, 53, 47, 0.04);
+    background: var(--notion-hover);
 }
 
-/* Main Content */
+/* --- CONTEÚDO PRINCIPAL --- */
 .main-content {
     flex: 1;
-    overflow-y: auto;
-    padding: 40px 10%;
+    padding: 40px 10%; /* Margens elegantes no Desktop */
+    max-width: 100%;
+    overflow-x: hidden;
 }
 
-/* Grid Tela Inicial */
+h1 {
+    font-size: 40px;
+    font-weight: 700;
+    margin-top: 0;
+    margin-bottom: 16px;
+    letter-spacing: -0.5px;
+}
+
+/* --- GRID DE CARDS (TELA INICIAL) --- */
 .notion-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-    gap: 12px;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 16px;
+    margin-top: 32px;
 }
 
 .notion-card {
     border: 1px solid var(--notion-border);
-    padding: 16px;
+    padding: 20px;
     border-radius: 8px;
     text-decoration: none;
     color: inherit;
-    transition: background 0.2s;
+    background: white;
+    transition: all 0.2s ease;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
 }
 
 .notion-card:hover {
-    background: #f1f1ef;
+    background: var(--notion-sidebar);
+    border-color: rgba(55, 53, 47, 0.2);
+    transform: translateY(-2px);
 }
 
-/* Tabela Plano de Ação */
+/* --- TABELA DE PLANO DE AÇÃO --- */
+.table-container {
+    width: 100%;
+    overflow-x: auto; /* Scroll horizontal apenas na tabela se necessário */
+    margin-top: 32px;
+    border-top: 1px solid var(--notion-border);
+}
+
 .action-table {
     width: 100%;
     border-collapse: collapse;
-    margin-top: 24px;
+    min-width: 600px; /* Impede a tabela de achatar demais */
 }
 
 .action-table th {
     text-align: left;
-    font-size: 12px;
-    color: rgba(55, 53, 47, 0.5);
-    padding: 8px;
+    font-size: 11px;
+    color: rgba(55, 53, 47, 0.45);
+    padding: 12px 8px;
     border-bottom: 1px solid var(--notion-border);
+    text-transform: uppercase;
 }
 
 .action-table td {
-    padding: 12px 8px;
+    padding: 16px 8px;
     border-bottom: 1px solid var(--notion-border);
     font-size: 14px;
+    line-height: 1.5;
+    vertical-align: top;
 }
 
-/* Área de Escrita */
+/* --- EDITOR DE NOTAS RÁPIDAS --- */
 .notion-editor {
     width: 100%;
     border: none;
     outline: none;
-    font-size: 16px;
-    line-height: 1.5;
+    font-size: 17px;
+    line-height: 1.6;
     resize: none;
-    margin-top: 20px;
+    min-height: 150px;
+    font-family: inherit;
+    color: var(--notion-text);
+    padding: 12px 0;
+}
+
+.notion-editor::placeholder {
+    color: rgba(55, 53, 47, 0.2);
 }
 
 .callout {
@@ -104,6 +168,81 @@ body {
     padding: 16px;
     border-radius: 4px;
     display: flex;
-    gap: 10px;
-    margin: 20px 0;
+    gap: 12px;
+    margin: 24px 0;
+    align-items: center;
+    font-size: 14px;
+}
+
+/* --- BOTÕES E INPUTS --- */
+.notion-input {
+    padding: 8px 12px;
+    border: 1px solid var(--notion-border);
+    border-radius: 4px;
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+.notion-input:focus {
+    border-color: var(--notion-blue);
+}
+
+.btn-primary {
+    background: var(--notion-blue);
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    font-weight: 500;
+    cursor: pointer;
+}
+
+/* ======================================================
+   📱 REGRAS PARA CELULAR (Telas menores que 768px)
+   ====================================================== */
+
+@media (max-width: 768px) {
+    body {
+        flex-direction: column; /* Sidebar em cima, Conteúdo embaixo */
+    }
+
+    .sidebar {
+        width: 100%;
+        height: auto;
+        position: relative;
+        padding: 12px;
+        flex-direction: row;
+        overflow-x: auto; /* Permite rolar o menu lateralmente se for longo */
+        border-right: none;
+        border-bottom: 1px solid var(--notion-border);
+    }
+
+    .sidebar-title {
+        display: none; /* Esconde o título da workspace para ganhar espaço */
+    }
+
+    .sidebar-item {
+        margin-bottom: 0;
+        margin-right: 4px;
+        white-space: nowrap; /* Impede o texto do menu de quebrar linha */
+        padding: 10px 16px;
+    }
+
+    .main-content {
+        padding: 32px 20px; /* Reduz margens laterais no celular */
+    }
+
+    h1 {
+        font-size: 28px; /* Título menor para telas pequenas */
+    }
+
+    .notion-grid {
+        grid-template-columns: 1fr; /* Cards ocupam a largura toda no celular */
+    }
+
+    .callout {
+        flex-direction: column;
+        align-items: flex-start;
+    }
 }
