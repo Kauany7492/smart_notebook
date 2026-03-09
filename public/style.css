@@ -1,7 +1,5 @@
-/* Importação da fonte padrão do Notion */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
-/* --- CONFIGURAÇÃO DE TEMAS (Cores Oficiais) --- */
 :root {
     --notion-bg: #ffffff;
     --notion-sidebar: #f7f6f3;
@@ -23,26 +21,17 @@
     --notion-card: #252525;
 }
 
-/* --- RESET E ESTRUTURA GLOBAL --- */
-* {
-    box-sizing: border-box;
-    -webkit-tap-highlight-color: transparent;
-}
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
 html, body {
     background-color: var(--notion-bg) !important;
     color: var(--notion-text) !important;
-    font-family: 'Inter', -apple-system, system-ui, sans-serif;
+    font-family: 'Inter', sans-serif;
     margin: 0;
-    padding: 0;
-    min-height: 100vh;
-    transition: background 0.3s ease, color 0.3s ease;
+    transition: background 0.3s ease;
 }
 
-body {
-    display: flex;
-    flex-direction: row; /* Desktop: Sidebar na esquerda */
-}
+body { display: flex; min-height: 100vh; }
 
 /* --- SIDEBAR --- */
 .sidebar {
@@ -52,21 +41,9 @@ body {
     padding: 24px 12px;
     display: flex;
     flex-direction: column;
-    flex-shrink: 0;
     height: 100vh;
     position: sticky;
     top: 0;
-    z-index: 100;
-}
-
-.sidebar-title {
-    font-weight: 600;
-    font-size: 12px;
-    padding: 0 12px 10px;
-    color: var(--notion-text);
-    opacity: 0.5;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
 }
 
 .sidebar-item {
@@ -75,167 +52,60 @@ body {
     text-decoration: none;
     color: var(--notion-text) !important;
     font-size: 14px;
-    margin-bottom: 2px;
     display: flex;
     align-items: center;
-    gap: 10px;
-    transition: background 0.2s;
+    gap: 8px;
     background: transparent;
     border: none;
     cursor: pointer;
     width: 100%;
-    text-align: left;
 }
 
-.sidebar-item:hover {
-    background-color: var(--notion-hover);
-}
+.sidebar-item:hover, .sidebar-item.active { background: var(--notion-hover); }
 
-.sidebar-item.active {
-    background-color: var(--notion-hover);
-    font-weight: 600;
-}
+/* --- CONTEÚDO --- */
+.main-content { flex: 1; padding: 40px 10%; }
 
-/* --- CONTEÚDO PRINCIPAL --- */
-.main-content {
-    flex: 1;
-    padding: 40px 10%;
-    max-width: 100%;
-    overflow-x: hidden;
-}
-
-h1 {
-    font-size: 36px;
-    font-weight: 700;
-    margin-top: 0;
-    margin-bottom: 20px;
-    letter-spacing: -0.5px;
-}
-
-/* --- GRID E CARDS --- */
-.notion-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-    gap: 16px;
-    margin-top: 24px;
-}
-
-.notion-card {
-    background-color: var(--notion-card) !important;
-    border: 1px solid var(--notion-border);
-    padding: 24px;
-    border-radius: 8px;
-    text-decoration: none;
-    color: var(--notion-text) !important;
-    transition: transform 0.2s, box-shadow 0.2s;
-    display: block;
-}
-
-.notion-card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-}
-
-/* --- COMPONENTES DE NOTAS --- */
 .notion-editor {
     width: 100%;
     background: transparent;
     border: 1px solid var(--notion-border);
     border-radius: 4px;
     color: var(--notion-text);
-    font-size: 16px;
-    line-height: 1.6;
     padding: 12px;
-    margin-bottom: 12px;
-    font-family: inherit;
-    resize: vertical;
+    font-size: 16px;
+    margin-bottom: 10px;
     outline: none;
-}
-
-.notion-editor:focus {
-    border-color: var(--notion-blue);
+    font-family: inherit;
 }
 
 .btn-primary {
-    background-color: var(--notion-blue);
+    background: var(--notion-blue);
     color: white;
     border: none;
-    padding: 10px 20px;
+    padding: 12px 24px;
     border-radius: 4px;
     font-weight: 600;
     cursor: pointer;
-    transition: opacity 0.2s;
 }
 
-.btn-primary:hover { opacity: 0.9; }
-
-.callout {
-    background-color: var(--notion-hover);
-    padding: 16px;
-    border-radius: 4px;
-    display: flex;
-    gap: 12px;
-    margin: 24px 0;
-    border: 1px solid var(--notion-border);
+/* --- ANIMAÇÃO DE GRAVAÇÃO --- */
+.pulse {
+    width: 10px;
+    height: 10px;
+    background-color: #ff4d4d;
+    border-radius: 50%;
+    margin-right: 8px;
+    animation: pulse-animation 1.5s infinite;
 }
 
-/* --- TABELAS RESPONSIVAS --- */
-.table-container {
-    width: 100%;
-    overflow-x: auto;
-    margin-top: 20px;
+@keyframes pulse-animation {
+    0% { transform: scale(0.9); opacity: 1; }
+    50% { transform: scale(1.2); opacity: 0.5; }
+    100% { transform: scale(0.9); opacity: 1; }
 }
 
-.action-table {
-    width: 100%;
-    border-collapse: collapse;
-    min-width: 600px;
-}
-
-.action-table th {
-    text-align: left;
-    font-size: 11px;
-    color: var(--notion-text);
-    opacity: 0.5;
-    padding: 12px;
-    border-bottom: 1px solid var(--notion-border);
-    text-transform: uppercase;
-}
-
-.action-table td {
-    padding: 14px 12px;
-    border-bottom: 1px solid var(--notion-border);
-    font-size: 14px;
-}
-
-/* --- MEDIA QUERIES (Celular) --- */
 @media (max-width: 768px) {
-    body {
-        flex-direction: column;
-    }
-
-    .sidebar {
-        width: 100%;
-        height: auto;
-        position: relative;
-        padding: 10px;
-        flex-direction: row;
-        overflow-x: auto;
-        border-right: none;
-        border-bottom: 1px solid var(--notion-border);
-    }
-
-    .sidebar-title { display: none; }
-
-    .sidebar-item {
-        white-space: nowrap;
-        width: auto;
-        padding: 8px 16px;
-    }
-
-    .main-content {
-        padding: 24px 16px;
-    }
-
-    h1 { font-size: 28px; }
+    body { flex-direction: column; }
+    .sidebar { width: 100%; height: auto; flex-direction: row; overflow-x: auto; }
 }
