@@ -15,8 +15,12 @@
     <aside class="sidebar">
         <div class="sidebar-title">Workspace</div>
         <a href="/" class="sidebar-item">🏠 Início</a>
-        
-        <div style="margin-top: 20px;" class="sidebar-title">Meus Cadernos</div>
+    
+        <a href="/notebook/<%= notebook.id %>/podcast" class="sidebar-item" style="color: var(--notion-blue); font-weight: 500;">
+            🎙️ Modo Podcast
+        </a>
+
+        <div style="margin-top: 24px;" class="sidebar-title">Cadernos</div>
         <div class="sidebar-list">
             <% notebooks.forEach(nb => { %>
                 <a href="/notebook/<%= nb.id %>" class="sidebar-item <%= nb.id == notebook.id ? 'active' : '' %>">
@@ -25,11 +29,10 @@
             <% }) %>
         </div>
 
-        <button onclick="toggleDarkMode()" class="sidebar-item" id="theme-toggle" style="margin-top: auto;">
+        <button onclick="toggleDarkMode()" class="sidebar-item" id="theme-toggle" style="margin-top: auto; border: none; background: none; width: 100%;">
             🌙 Modo Escuro
         </button>
     </aside>
-
     <main class="main-content">
         <header>
             <h1 style="border-left: 8px solid <%= notebook.color %>; padding-left: 16px;">
@@ -55,4 +58,5 @@
         </div>
 
         <hr style="margin: 40px 0; border: 0
+
 
