@@ -1,40 +1,29 @@
 <!DOCTYPE html>
-<html lang="pt-br" data-theme="light">
+<html lang="pt-br">
 <head>
-    <link rel="stylesheet" href="/style.css">
+    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Início | Planner AI</title>
+    <link rel="stylesheet" href="/style.css">
 </head>
-<body class="main-content">
-    <script>
-        // Executa IMEDIATAMENTE antes de renderizar o resto da página
-        const theme = localStorage.getItem('notion-theme') || 'light';
-        document.documentElement.setAttribute('data-theme', theme);
-    </script
-    <div style="max-width: 800px; margin: 0 auto;">
-        <h1>🎯 Gestão Pessoal</h1>
-        <div style="margin: 20px 0; display: flex; gap: 10px;">
-            <input type="text" id="nbName" placeholder="Novo caderno..." style="flex:1; padding:8px; border:1px solid #ddd; border-radius:4px;">
-            <button onclick="add()" style="background:var(--notion-blue); color:white; border:none; padding:8px 16px; border-radius:4px; cursor:pointer;">Criar</button>
-        </div>
+<body>
+    <%- include('partials/sidebar') %>
+
+    <main class="main-content">
+        <h1>Olá! 👋</h1>
+        <p style="opacity: 0.6; margin-bottom: 40px;">Aqui estão seus projetos mais recentes:</p>
+
         <div class="notion-grid">
-            <% notebooks.forEach(nb => { %>
-                <a href="/notebook/<%= nb.id %>" class="notion-card">
-                    <div style="font-size: 24px;">📑</div>
-                    <b><%= nb.name %></b>
+            <% notebooks.slice(0, 2).forEach(nb => { %>
+                <a href="/notebook/<%= nb.id %>" class="notion-card" style="border-top: 5px solid <%= nb.color %>">
+                    <strong><%= nb.name %></strong>
                 </a>
             <% }) %>
         </div>
-    </div>
-    <script>
-        async function add() {
-            const name = document.getElementById('nbName').value;
-            await fetch('/create-notebook', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({name})});
-            location.reload();
-        }
-    </script>
+
+        <a href="/cadernos" style="display: inline-block; margin-top: 30px; font-weight: 600; color: var(--notion-blue); text-decoration: none;">
+            Ver todos os projetos →
+        </a>
+    </main>
 </body>
-
 </html>
-
-
-
