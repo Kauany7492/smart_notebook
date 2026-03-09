@@ -13,22 +13,29 @@
     </script>
 
     <aside class="sidebar">
-        <div style="opacity: 0.5; font-size: 12px; padding: 10px;">WORKSPACE</div>
-        <a href="/" class="sidebar-item">🏠 Início</a>
-        <a href="/notebook/<%= notebook.id %>/podcast" class="sidebar-item">🎙️ Modo Podcast</a>
-        
-        <div style="margin-top: 20px; opacity: 0.5; font-size: 12px; padding: 10px;">CADERNOS</div>
-        <% notebooks.forEach(nb => { %>
-            <a href="/notebook/<%= nb.id %>" class="sidebar-item <%= nb.id == notebook.id ? 'active' : '' %>">
-                <span style="color: <%= nb.color %>">●</span> <%= nb.name %>
-            </a>
-        <% }) %>
-
-        <button onclick="toggleDarkMode()" class="sidebar-item" id="theme-toggle" style="margin-top: auto;">
-            🌙 Modo Escuro
+    <div class="sidebar-title">Workspace</div>
+    <a href="/" class="sidebar-item">🏠 Início</a>
+    <a href="/notebook/<%= notebook.id %>/podcast" class="sidebar-item">🎙️ Modo Podcast</a>
+    
+    <div style="margin-top: 20px;">
+        <button onclick="toggleProjects()" class="sidebar-item" id="projects-toggle" style="justify-content: space-between;">
+            <span>📂Meus Cadernos</span>
+            <span id="arrow-icon" style="font-size: 10px; transition: transform 0.3s;">▶</span>
         </button>
-    </aside>
+        
+        <div id="projects-list" style="display: none; padding-left: 15px; flex-direction: column;">
+            <% notebooks.forEach(nb => { %>
+                <a href="/notebook/<%= nb.id %>" class="sidebar-item <%= nb.id == notebook.id ? 'active' : '' %>" style="font-size: 13px; opacity: 0.8;">
+                    <span style="color: <%= nb.color %>">●</span> <%= nb.name %>
+                </a>
+            <% }) %>
+        </div>
+    </div>
 
+    <button onclick="toggleDarkMode()" class="sidebar-item" id="theme-toggle" style="margin-top: auto;">
+        🌙 Modo Escuro
+    </button>
+</aside>
     <main class="main-content">
         <h1 style="border-left: 8px solid <%= notebook.color %>; padding-left: 15px;"><%= notebook.name %></h1>
         
@@ -70,7 +77,31 @@
         let recognition;
         let isListening = false;
 
-        function toggleMic() {
+        function toggleProjects() {
+    const list = document.getElementById('projects-list');
+    const arrow = document.getElementById('arrow-icon');
+    
+    if (list.style.display === 'none' || list.style.display === '') {
+        list.style.display = 'flex';
+        arrow.style.transform = 'rotate(90deg)'; // Gira a seta para baixo
+        localStorage.setItem('projects-expanded', 'true');
+    } else {
+        list.style.display = 'none';
+        arrow.style.transform = 'rotate(0deg)'; // Volta a seta ao normal
+        localStorage.setItem('projects-expanded', 'false');
+    }
+}
+
+// Manter a aba aberta se o usuário já a abriu anteriormente
+window.addEventListener('DOMContentLoaded', () => {
+    if (localStorage.getItem('projects-expanded') === 'true') {
+        const list = document.getElementById('projects-list');
+        const arrow = document.getElementById('arrow-icon');
+        list.style.display = 'flex';
+        arrow.style.transform = 'rotate(90deg)';
+    }
+});
+            function toggleMic() {
             if (isListening) {
                 recognition.stop();
                 return;
@@ -138,3 +169,4 @@
     </script>
 </body>
 </html>
+
