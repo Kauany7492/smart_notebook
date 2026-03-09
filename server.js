@@ -1,140 +1,67 @@
 require('dotenv').config();
 const express = require('express');
-const bodyParser = require('body-parser');
-const db = require('./database');
-const { GoogleGenerativeAI } = require("@google/generative-ai");
+const mysql = require('mysql2/promise');
+const path = require('path');
+const { GoogleGenerativeAI } = require('@google/generative-ai');
 
 const app = express();
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
+// Configurações do Express
 app.set('view engine', 'ejs');
-app.use(express.static('public'));
-app.use(bodyParser.json());
+app.set('views', path.join(__dirname, 'views'));
+app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
-// --- ROTAS DE CADERNOS (NOTION STYLE) ---
+// Conexão com o Banco de Dados (TiDB Cloud)
+const db = mysql.createPool({
+    host: process.env.DB_HOST,
+    user: process.env.DB_USER,
+    password: process.env.DB_PASSWORD,
+    database: process.env.DB_NAME,
+    port: process.env.DB_PORT || 4000,
+    ssl: { minVersion: 'TLSv1.2', rejectUnauthorized: true }
+});
 
-// Listar todos os cadernos
+// --- ROTAS ---
+
+// 1. HOME: Mostra os 2 cadernos mais recentes
 app.get('/', async (req, res) => {
     try {
-        const [rows] = await db.query('SELECT * FROM notebooks');
-        res.render('index', { notebooks: rows });
+        const [rows] = await db.query('SELECT * FROM notebooks ORDER BY created_at DESC');
+        res.render('index', { notebooks: rows }); // O index.ejs usará .slice(0,2)
     } catch (error) {
-        console.error("Erro ao listar cadernos:", error);
-        res.status(500).send("Erro ao carregar o banco de dados.");
+        console.error(error);
+        res.status(500).send("Erro ao carregar a Home.");
     }
 });
 
-// Criar novo caderno
-app.post('/create-notebook', async (req, res) => {
+// 2. PÁGINA DE CADERNOS: Lista todos e permite busca
+app.get('/cadernos', async (req, res) => {
+    try {
+        const [rows] = await db.query('SELECT * FROM notebooks ORDER BY created_at DESC');
+        res.render('cadernos', { notebooks: rows });
+    } catch (error) {
+        console.error(error);
+        res.status(500).send("Erro ao carregar cadernos.");
+    }
+});
+
+// 3. CRIAR NOVO CADERNO
+app.post('/notebooks/create', async (req, res) => {
     const { name, color } = req.body;
     try {
-        await db.query('INSERT INTO notebooks (name, color) VALUES (?, ?)', [name, color || '#ffffff']);
-        res.json({ success: true });
+        await db.query('INSERT INTO notebooks (name, color) VALUES (?, ?)', [name, color]);
+        res.redirect('/cadernos');
     } catch (error) {
-        console.error("Erro ao criar caderno:", error);
-        res.status(500).json({ error: "Erro ao salvar no banco." });
+        console.error(error);
+        res.status(500).send("Erro ao criar caderno.");
     }
 });
 
-// Deletar caderno
-app.delete('/delete-notebook/:id', async (req, res) => {
-    try {
-        await db.query('DELETE FROM notebooks WHERE id = ?', [req.params.id]);
-        res.json({ success: true });
-    } catch (error) {
-        res.status(500).json({ error: "Erro ao deletar." });
-    }
-});
-
-// --- ROTAS DE NOTAS (PLANO DE AÇÃO) ---
-
-// Ver caderno específico e suas notas
+// 4. VISUALIZAR CADERNO ESPECÍFICO
 app.get('/notebook/:id', async (req, res) => {
     try {
-        // 1. Busca todos os cadernos para a Sidebar
-        const [allNotebooks] = await db.query('SELECT * FROM notebooks');
-        
-        // 2. Busca o caderno específico
-        const [notebookResult] = await db.query('SELECT * FROM notebooks WHERE id = ?', [req.params.id]);
-        
-        // 3. Busca as notas desse caderno
-        const [notes] = await db.query('SELECT * FROM notes WHERE notebook_id = ? ORDER BY created_at DESC', [req.params.id]);
-        
-        if (notebookResult.length === 0) return res.redirect('/');
-        
-        // ENVIAMOS: notebooks (para a sidebar) e notebook (para o título)
-        res.render('notebook', { 
-            notebooks: allNotebooks, 
-            notebook: notebookResult[0], 
-            notes: notes 
-        });
-    } catch (error) {
-        console.error("Erro ao abrir caderno:", error);
-        res.redirect('/');
-    }
-});
-
-// Processar Áudio e Notas com Gemini IA
-app.post('/notebook/:id/process', async (req, res) => {
-    const { transcription, quickNote } = req.body;
-    
-    try {
-        // ATUALIZAÇÃO: Usando gemini-1.5-flash-latest para evitar erro 404
-        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash-latest" });
-        
-        const prompt = `Atue como um assistente de produtividade estilo Notion. 
-                        Organize o seguinte conteúdo em um "Plano de Ação" estruturado.
-                        Transcrição do áudio: ${transcription}. 
-                        Notas rápidas do usuário: ${quickNote}.
-                        Use formatação Markdown elegante.`;
-
-        const result = await model.generateContent(prompt);
-        const responseText = result.response.text();
-
-        // Salva no banco de dados
-        await db.query('INSERT INTO notes (notebook_id, content, transcription, quick_note) VALUES (?, ?, ?, ?)', 
-            [req.params.id, responseText, transcription, quickNote]);
-        
-        res.json({ success: true });
-    } catch (error) {
-        console.error("Erro na IA Google Gemini:", error);
-        res.status(500).json({ error: "A IA não conseguiu processar. Verifique sua chave API." });
-    }
-});
-
-// Deletar nota específica
-app.delete('/delete-note/:id', async (req, res) => {
-    try {
-        await db.query('DELETE FROM notes WHERE id = ?', [req.params.id]);
-        res.json({ success: true });
-    } catch (error) {
-        res.status(500).json({ error: "Erro ao apagar nota." });
-    }
-});
-
-app.use(express.static('public')); // Garante que a pasta /public seja visível
-
-// --- ROTA PODCAST REVISÃO ---
-app.get('/notebook/:id/podcast', async (req, res) => {
-    try {
-        const [notebook] = await db.query('SELECT * FROM notebooks WHERE id = ?', [req.params.id]);
-        const [notes] = await db.query('SELECT * FROM notes WHERE notebook_id = ?', [req.params.id]);
-        res.render('podcast', { notebook: notebook[0], notes });
-    } catch (error) {
-        res.redirect('/');
-    }
-});
-
-const PORT = 3000;
-app.listen(PORT, () => {
-    console.log(`
-    🚀 Notebook AI Online!
-    📍 Local: http://localhost:${PORT}
-    🌸 Estilo: Notion Clean & Minimalist
-    `);
-
-});
-
-
-
-
+        const [allNotebooks] = await db.query('SELECT * FROM notebooks ORDER BY created_at DESC');
+        const [notebook] = await db.query('SELECT * FROM notebooks WHERE id = ?',
