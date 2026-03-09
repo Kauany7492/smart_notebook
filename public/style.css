@@ -1,6 +1,7 @@
+/* Importação da fonte padrão do Notion */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
-/* Variáveis de Tema */
+/* --- CONFIGURAÇÃO DE TEMAS (Cores Oficiais) --- */
 :root {
     --notion-bg: #ffffff;
     --notion-sidebar: #f7f6f3;
@@ -22,22 +23,31 @@
     --notion-card: #252525;
 }
 
-* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+/* --- RESET E ESTRUTURA GLOBAL --- */
+* {
+    box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
+}
 
-body {
-    background: var(--notion-bg);
-    color: var(--notion-text);
-    font-family: 'Inter', sans-serif;
+html, body {
+    background-color: var(--notion-bg) !important;
+    color: var(--notion-text) !important;
+    font-family: 'Inter', -apple-system, system-ui, sans-serif;
     margin: 0;
-    display: flex;
+    padding: 0;
     min-height: 100vh;
     transition: background 0.3s ease, color 0.3s ease;
+}
+
+body {
+    display: flex;
+    flex-direction: row; /* Desktop: Sidebar na esquerda */
 }
 
 /* --- SIDEBAR --- */
 .sidebar {
     width: var(--sidebar-width);
-    background: var(--notion-sidebar);
+    background-color: var(--notion-sidebar) !important;
     border-right: 1px solid var(--notion-border);
     padding: 24px 12px;
     display: flex;
@@ -46,18 +56,29 @@ body {
     height: 100vh;
     position: sticky;
     top: 0;
+    z-index: 100;
+}
+
+.sidebar-title {
+    font-weight: 600;
+    font-size: 12px;
+    padding: 0 12px 10px;
+    color: var(--notion-text);
+    opacity: 0.5;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
 }
 
 .sidebar-item {
     padding: 8px 12px;
     border-radius: 4px;
     text-decoration: none;
-    color: var(--notion-text);
+    color: var(--notion-text) !important;
     font-size: 14px;
-    margin-bottom: 4px;
+    margin-bottom: 2px;
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 10px;
     transition: background 0.2s;
     background: transparent;
     border: none;
@@ -66,53 +87,155 @@ body {
     text-align: left;
 }
 
-.sidebar-item:hover { background: var(--notion-hover); }
+.sidebar-item:hover {
+    background-color: var(--notion-hover);
+}
 
-/* --- CONTEÚDO --- */
+.sidebar-item.active {
+    background-color: var(--notion-hover);
+    font-weight: 600;
+}
+
+/* --- CONTEÚDO PRINCIPAL --- */
 .main-content {
     flex: 1;
     padding: 40px 10%;
     max-width: 100%;
+    overflow-x: hidden;
 }
 
-h1 { font-size: 40px; font-weight: 700; margin-bottom: 16px; }
+h1 {
+    font-size: 36px;
+    font-weight: 700;
+    margin-top: 0;
+    margin-bottom: 20px;
+    letter-spacing: -0.5px;
+}
 
+/* --- GRID E CARDS --- */
 .notion-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
     gap: 16px;
+    margin-top: 24px;
 }
 
 .notion-card {
+    background-color: var(--notion-card) !important;
     border: 1px solid var(--notion-border);
-    padding: 20px;
+    padding: 24px;
     border-radius: 8px;
-    background: var(--notion-card);
     text-decoration: none;
-    color: inherit;
-    transition: transform 0.2s;
+    color: var(--notion-text) !important;
+    transition: transform 0.2s, box-shadow 0.2s;
+    display: block;
 }
 
-.notion-card:hover { transform: translateY(-2px); }
+.notion-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
 
-/* --- TABELAS E COMPONENTES --- */
-.table-container { overflow-x: auto; margin-top: 32px; }
-.action-table { width: 100%; border-collapse: collapse; min-width: 600px; }
-.action-table th { text-align: left; font-size: 11px; color: rgba(150, 150, 150, 0.6); padding: 12px; border-bottom: 1px solid var(--notion-border); }
-.action-table td { padding: 16px 12px; border-bottom: 1px solid var(--notion-border); font-size: 14px; }
+/* --- COMPONENTES DE NOTAS --- */
+.notion-editor {
+    width: 100%;
+    background: transparent;
+    border: 1px solid var(--notion-border);
+    border-radius: 4px;
+    color: var(--notion-text);
+    font-size: 16px;
+    line-height: 1.6;
+    padding: 12px;
+    margin-bottom: 12px;
+    font-family: inherit;
+    resize: vertical;
+    outline: none;
+}
+
+.notion-editor:focus {
+    border-color: var(--notion-blue);
+}
+
+.btn-primary {
+    background-color: var(--notion-blue);
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 4px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: opacity 0.2s;
+}
+
+.btn-primary:hover { opacity: 0.9; }
 
 .callout {
-    background: var(--notion-hover);
+    background-color: var(--notion-hover);
     padding: 16px;
     border-radius: 4px;
     display: flex;
     gap: 12px;
-    margin: 20px 0;
+    margin: 24px 0;
+    border: 1px solid var(--notion-border);
 }
 
-/* --- RESPONSIVIDADE --- */
+/* --- TABELAS RESPONSIVAS --- */
+.table-container {
+    width: 100%;
+    overflow-x: auto;
+    margin-top: 20px;
+}
+
+.action-table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 600px;
+}
+
+.action-table th {
+    text-align: left;
+    font-size: 11px;
+    color: var(--notion-text);
+    opacity: 0.5;
+    padding: 12px;
+    border-bottom: 1px solid var(--notion-border);
+    text-transform: uppercase;
+}
+
+.action-table td {
+    padding: 14px 12px;
+    border-bottom: 1px solid var(--notion-border);
+    font-size: 14px;
+}
+
+/* --- MEDIA QUERIES (Celular) --- */
 @media (max-width: 768px) {
-    body { flex-direction: column; }
-    .sidebar { width: 100%; height: auto; flex-direction: row; overflow-x: auto; position: relative; }
-    .main-content { padding: 20px; }
+    body {
+        flex-direction: column;
+    }
+
+    .sidebar {
+        width: 100%;
+        height: auto;
+        position: relative;
+        padding: 10px;
+        flex-direction: row;
+        overflow-x: auto;
+        border-right: none;
+        border-bottom: 1px solid var(--notion-border);
+    }
+
+    .sidebar-title { display: none; }
+
+    .sidebar-item {
+        white-space: nowrap;
+        width: auto;
+        padding: 8px 16px;
+    }
+
+    .main-content {
+        padding: 24px 16px;
+    }
+
+    h1 { font-size: 28px; }
 }
