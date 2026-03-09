@@ -8,66 +8,53 @@
 </head>
 <body>
     <script>
-        const savedTheme = localStorage.getItem('notion-theme') || 'light';
-        document.documentElement.setAttribute('data-theme', savedTheme);
+        document.documentElement.setAttribute('data-theme', localStorage.getItem('notion-theme') || 'light');
     </script>
 
-    <aside class="sidebar">
-    <div class="sidebar-title">Workspace</div>
-    <a href="/" class="sidebar-item">🏠 Início</a>
-    <a href="/notebook/<%= notebook.id %>/podcast" class="sidebar-item">🎙️ Modo Podcast</a>
-    
-    <div style="margin-top: 20px;">
-        <button onclick="toggleProjects()" class="sidebar-item" id="projects-toggle" style="justify-content: space-between;">
-            <span>📂Meus Cadernos</span>
-            <span id="arrow-icon" style="font-size: 10px; transition: transform 0.3s;">▶</span>
-        </button>
-        
-        <div id="projects-list" style="display: none; padding-left: 15px; flex-direction: column;">
-            <% notebooks.forEach(nb => { %>
-                <a href="/notebook/<%= nb.id %>" class="sidebar-item <%= nb.id == notebook.id ? 'active' : '' %>" style="font-size: 13px; opacity: 0.8;">
-                    <span style="color: <%= nb.color %>">●</span> <%= nb.name %>
-                </a>
-            <% }) %>
-        </div>
-    </div>
+    <%- include('partials/sidebar') %>
 
-    <button onclick="toggleDarkMode()" class="sidebar-item" id="theme-toggle" style="margin-top: auto;">
-        🌙 Modo Escuro
-    </button>
-</aside>
     <main class="main-content">
-        <h1 style="border-left: 8px solid <%= notebook.color %>; padding-left: 15px;"><%= notebook.name %></h1>
+        <header style="margin-bottom: 40px;">
+            <h1 style="border-left: 8px solid <%= notebook.color %>; padding-left: 15px; margin-bottom: 5px;">
+                <%= notebook.name %>
+            </h1>
+            <small style="opacity: 0.5;">Criado em <%= new Date(notebook.created_at).toLocaleDateString('pt-BR') %></small>
+        </header>
         
         <div class="callout">
             <span>💡</span>
-            <div>Use o microfone para ditar ideias ou capture áudio de outras abas para transcrever reuniões/vídeos.</div>
+            <div>Use o microfone para ditar ou capture o áudio de uma aba do navegador para transcrever reuniões.</div>
         </div>
 
-        <textarea id="quickNote" class="notion-editor" placeholder="Rascunho rápido..."></textarea>
-        
-        <div style="display: flex; gap: 10px; margin-bottom: 10px;">
-            <button onclick="toggleMic()" class="sidebar-item" id="micBtn" style="border: 1px solid var(--notion-border); width: auto;">
-                🎤 Ouvir Microfone
-            </button>
-            <button onclick="startTabAudio()" class="sidebar-item" style="border: 1px solid var(--notion-border); width: auto;">
-                🌐 Ouvir Aba
-            </button>
-            <div id="statusIcon" style="display: none; align-items: center; color: var(--notion-blue); font-size: 13px;">
-                <span class="pulse"></span> Gravando...
+        <section class="input-area">
+            <textarea id="quickNote" class="notion-editor" placeholder="Escreva um rascunho ou pontos principais..."></textarea>
+            
+            <div style="display: flex; gap: 10px; margin-bottom: 12px; align-items: center; flex-wrap: wrap;">
+                <button onclick="toggleMic()" class="sidebar-item" id="micBtn" style="border: 1px solid var(--notion-border); width: auto;">
+                    🎤 Ouvir Microfone
+                </button>
+                <button onclick="startTabAudio()" class="sidebar-item" style="border: 1px solid var(--notion-border); width: auto;">
+                    🌐 Ouvir Aba
+                </button>
+                <div id="statusIcon" style="display: none; align-items: center; color: var(--notion-blue); font-size: 13px; font-weight: 600;">
+                    <span class="pulse"></span> Gravando...
+                </div>
             </div>
-        </div>
 
-        <textarea id="transcription" class="notion-editor" style="font-size: 14px; opacity: 0.8; min-height: 120px;" placeholder="A transcrição aparecerá aqui..."></textarea>
-        
-        <button onclick="processWithAI()" class="btn-primary" id="btnProcess">✨ Gerar Plano de Ação</button>
+            <textarea id="transcription" class="notion-editor" style="font-size: 14px; opacity: 0.8; min-height: 120px;" placeholder="A transcrição do áudio aparecerá aqui..."></textarea>
+            
+            <button onclick="processWithAI()" id="btnProcess">✨ Gerar Plano de Ação</button>
+        </section>
 
-        <hr style="margin: 40px 0; border: 0; border-top: 1px solid var(--notion-border);">
+        <hr style="margin: 50px 0; border: 0; border-top: 1px solid var(--notion-border);">
 
         <div id="notes-container">
             <% notes.forEach(note => { %>
-                <div class="notion-card" style="margin-bottom: 20px;">
-                    <%- note.content %>
+                <div class="notion-card" style="margin-bottom: 25px; position: relative; width: 100%;">
+                    <button onclick="deleteNote('<%= note.id %>')" style="position: absolute; top: 15px; right: 15px; background: none; border: none; cursor: pointer; opacity: 0.3;">🗑️</button>
+                    <div class="note-render">
+                        <%- note.content %>
+                    </div>
                 </div>
             <% }) %>
         </div>
@@ -77,36 +64,8 @@
         let recognition;
         let isListening = false;
 
-        function toggleProjects() {
-    const list = document.getElementById('projects-list');
-    const arrow = document.getElementById('arrow-icon');
-    
-    if (list.style.display === 'none' || list.style.display === '') {
-        list.style.display = 'flex';
-        arrow.style.transform = 'rotate(90deg)'; // Gira a seta para baixo
-        localStorage.setItem('projects-expanded', 'true');
-    } else {
-        list.style.display = 'none';
-        arrow.style.transform = 'rotate(0deg)'; // Volta a seta ao normal
-        localStorage.setItem('projects-expanded', 'false');
-    }
-}
-
-// Manter a aba aberta se o usuário já a abriu anteriormente
-window.addEventListener('DOMContentLoaded', () => {
-    if (localStorage.getItem('projects-expanded') === 'true') {
-        const list = document.getElementById('projects-list');
-        const arrow = document.getElementById('arrow-icon');
-        list.style.display = 'flex';
-        arrow.style.transform = 'rotate(90deg)';
-    }
-});
-            function toggleMic() {
-            if (isListening) {
-                recognition.stop();
-                return;
-            }
-
+        function toggleMic() {
+            if (isListening) { recognition.stop(); return; }
             if (!('webkitSpeechRecognition' in window)) return alert("Navegador não suportado.");
 
             recognition = new webkitSpeechRecognition();
@@ -117,7 +76,7 @@ window.addEventListener('DOMContentLoaded', () => {
             recognition.onstart = () => {
                 isListening = true;
                 document.getElementById('statusIcon').style.display = 'flex';
-                document.getElementById('micBtn').innerHTML = "⏹️ Parar Ouvinte";
+                document.getElementById('micBtn').innerHTML = "⏹️ Parar";
             };
 
             recognition.onresult = (event) => {
@@ -133,40 +92,43 @@ window.addEventListener('DOMContentLoaded', () => {
                 document.getElementById('statusIcon').style.display = 'none';
                 document.getElementById('micBtn').innerHTML = "🎤 Ouvir Microfone";
             };
-
             recognition.start();
         }
 
         async function startTabAudio() {
             try {
-                await navigator.mediaDevices.getDisplayMedia({ video: true, audio: true });
-                alert("Captura de aba iniciada. O áudio deve sair pelos alto-falantes para ser transcrito.");
+                const stream = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: true });
+                alert("Captura iniciada. O áudio da aba será processado pelo microfone do sistema.");
                 if(!isListening) toggleMic();
             } catch (err) { console.error(err); }
         }
 
         async function processWithAI() {
             const btn = document.getElementById('btnProcess');
-            btn.innerText = "⏳ Processando...";
             const transcription = document.getElementById('transcription').value;
             const quickNote = document.getElementById('quickNote').value;
+            
+            if(!transcription && !quickNote) return alert("Adicione conteúdo para a IA!");
 
-            const res = await fetch('/notebook/<%= notebook.id %>/process', {
+            btn.innerText = "⏳ Criando Plano...";
+            btn.disabled = true;
+
+            const res = await fetch('/notebooks/<%= notebook.id %>/process', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ transcription, quickNote })
             });
 
             if (res.ok) window.location.reload();
+            else { alert("Erro no servidor."); btn.innerText = "✨ Gerar Plano de Ação"; btn.disabled = false; }
         }
 
-        function toggleDarkMode() {
-            const html = document.documentElement;
-            const theme = html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
-            html.setAttribute('data-theme', theme);
-            localStorage.setItem('notion-theme', theme);
+        async function deleteNote(id) {
+            if(confirm("Excluir nota?")) {
+                await fetch(`/delete-note/${id}`, { method: 'DELETE' });
+                window.location.reload();
+            }
         }
     </script>
 </body>
 </html>
-
