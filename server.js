@@ -51,12 +51,23 @@ app.delete('/delete-notebook/:id', async (req, res) => {
 // Ver caderno específico e suas notas
 app.get('/notebook/:id', async (req, res) => {
     try {
-        const [notebook] = await db.query('SELECT * FROM notebooks WHERE id = ?', [req.params.id]);
+        // 1. Busca todos os cadernos para a Sidebar
+        const [allNotebooks] = await db.query('SELECT * FROM notebooks');
+        
+        // 2. Busca o caderno específico
+        const [notebookResult] = await db.query('SELECT * FROM notebooks WHERE id = ?', [req.params.id]);
+        
+        // 3. Busca as notas desse caderno
         const [notes] = await db.query('SELECT * FROM notes WHERE notebook_id = ? ORDER BY created_at DESC', [req.params.id]);
         
-        if (notebook.length === 0) return res.redirect('/');
+        if (notebookResult.length === 0) return res.redirect('/');
         
-        res.render('notebook', { notebook: notebook[0], notes });
+        // ENVIAMOS: notebooks (para a sidebar) e notebook (para o título)
+        res.render('notebook', { 
+            notebooks: allNotebooks, 
+            notebook: notebookResult[0], 
+            notes: notes 
+        });
     } catch (error) {
         console.error("Erro ao abrir caderno:", error);
         res.redirect('/');
@@ -123,6 +134,7 @@ app.listen(PORT, () => {
     `);
 
 });
+
 
 
 
