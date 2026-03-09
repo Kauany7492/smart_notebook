@@ -1,0 +1,35 @@
+<aside class="sidebar">
+    <div class="sidebar-title">Menu Principal</div>
+    <a href="/" class="sidebar-item">🏠 Início</a>
+    <a href="/cadernos" class="sidebar-item">📂 Meus Projetos</a>
+    
+    <% if (typeof notebook !== 'undefined' && notebook.id) { %>
+        <div style="margin-top: 20px;" class="sidebar-title">Atual: <%= notebook.name %></div>
+        <a href="/notebook/<%= notebook.id %>/podcast" class="sidebar-item">🎙️ Modo Podcast</a>
+    <% } %>
+
+    <button onclick="toggleDarkMode()" class="sidebar-item" id="theme-toggle" style="margin-top: auto; border:none; background:none; cursor:pointer;">
+        🌙 Modo Escuro
+    </button>
+</aside>
+
+<script>
+    function toggleDarkMode() {
+        const html = document.documentElement;
+        const current = html.getAttribute('data-theme');
+        const next = current === 'dark' ? 'light' : 'dark';
+        html.setAttribute('data-theme', next);
+        localStorage.setItem('notion-theme', next);
+        updateThemeBtn(next);
+    }
+
+    function updateThemeBtn(theme) {
+        const btn = document.getElementById('theme-toggle');
+        if(btn) btn.innerHTML = theme === 'dark' ? '☀️ Modo Claro' : '🌙 Modo Escuro';
+    }
+
+    // Inicialização imediata do tema salvo
+    const saved = localStorage.getItem('notion-theme') || 'light';
+    document.documentElement.setAttribute('data-theme', saved);
+    window.addEventListener('DOMContentLoaded', () => updateThemeBtn(saved));
+</script>
