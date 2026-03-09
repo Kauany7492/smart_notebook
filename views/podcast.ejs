@@ -1,45 +1,48 @@
 <!DOCTYPE html>
 <html lang="pt-br" data-theme="light">
-
 <head>
-    <link rel="stylesheet" href="/style.css">
+    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Podcast | <%= notebook.name %></title>
+    <link rel="stylesheet" href="/style.css">
 </head>
-<body class="main-content">
+<body>
     <script>
-        // Executa IMEDIATAMENTE antes de renderizar o resto da página
-        const theme = localStorage.getItem('notion-theme') || 'light';
-        document.documentElement.setAttribute('data-theme', theme);
-    </script
-    <div style="max-width: 700px; margin: 0 auto;">
-        <a href="/notebook/<%= notebook.id %>" style="text-decoration:none; color:var(--notion-blue);">← Voltar</a>
-        <h1>🎙️ Estúdio de Podcast</h1>
-        <div class="callout">Selecione as tarefas do plano de ação para revisar.</div>
-
-        <% notes.forEach((n, i)=> { %>
-            <div style="padding:10px; border-bottom:1px solid #eee;">
-                <input type="checkbox" class="task" value="<%= n.content %>"> Nota de <%= new
-                    Date(n.created_at).toLocaleDateString() %>
-            </div>
-            <% }) %>
-
-                <button onclick="play()"
-                    style="margin-top:20px; background:var(--notion-text); color:white; border:none; padding:10px 20px; border-radius:4px; cursor:pointer;">🎧
-                    Gerar Podcast de Revisão</button>
-    </div>
-    <script>
-        function play() {
-            let txt = "Iniciando revisão. ";
-            document.querySelectorAll('.task:checked').forEach(t => txt += t.value);
-            const u = new SpeechSynthesisUtterance(txt);
-            u.lang = 'pt-BR';
-            window.speechSynthesis.speak(u);
-        }
+        document.documentElement.setAttribute('data-theme', localStorage.getItem('notion-theme') || 'light');
     </script>
+
+    <%- include('partials/sidebar') %>
+
+    <main class="main-content" style="display: flex; flex-direction: column; align-items: center; justify-content: center;">
+        
+        <div class="notion-card" style="max-width: 450px; width: 100%; text-align: center; padding: 50px 30px; border-radius: 24px; box-shadow: 0 20px 40px rgba(0,0,0,0.1);">
+            <div style="font-size: 70px; margin-bottom: 25px;">🎙️</div>
+            <h2 style="margin-bottom: 10px;"><%= notebook.name %></h2>
+            <p style="opacity: 0.5; font-size: 14px; margin-bottom: 40px;">Sua revisão semanal em áudio</p>
+
+            <div style="background: var(--notion-sidebar); padding: 25px; border-radius: 16px; margin-bottom: 20px;">
+                <div style="display: flex; gap: 20px; justify-content: center; align-items: center;">
+                    <button class="btn-primary" style="border-radius: 50%; width: 55px; height: 55px; font-size: 20px; display: flex; align-items: center; justify-content: center; padding: 0;">
+                        ▶️
+                    </button>
+                </div>
+                <div style="width: 100%; height: 6px; background: var(--notion-border); border-radius: 3px; margin-top: 25px; overflow: hidden;">
+                    <div style="width: 40%; height: 100%; background: var(--notion-blue);"></div>
+                </div>
+                <div style="display: flex; justify-content: space-between; font-size: 10px; margin-top: 8px; opacity: 0.5;">
+                    <span>01:24</span>
+                    <span>03:45</span>
+                </div>
+            </div>
+
+            <p style="font-size: 12px; opacity: 0.6; line-height: 1.5;">
+                O roteiro foi gerado cruzando todas as notas deste projeto para criar um resumo auditivo otimizado.
+            </p>
+        </div>
+
+        <a href="/notebook/<%= notebook.id %>" style="margin-top: 30px; text-decoration: none; color: var(--notion-text); opacity: 0.5; font-size: 14px;">
+            ← Voltar para as notas escritas
+        </a>
+    </main>
 </body>
-
-
 </html>
-
-
-
