@@ -5,6 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 </head>
 <body class="main-content">
+    <script>
+        // Executa IMEDIATAMENTE antes de renderizar o resto da página
+        const theme = localStorage.getItem('notion-theme') || 'light';
+        document.documentElement.setAttribute('data-theme', theme);
+    </script
     <div style="max-width: 800px; margin: 0 auto;">
         <h1>🎯 Gestão Pessoal</h1>
         <div style="margin: 20px 0; display: flex; gap: 10px;">
@@ -30,5 +35,6 @@
 </body>
 
 </html>
+
 
 
