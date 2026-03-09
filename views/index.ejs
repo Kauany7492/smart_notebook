@@ -7,23 +7,32 @@
     <link rel="stylesheet" href="/style.css">
 </head>
 <body>
+    <script>
+        document.documentElement.setAttribute('data-theme', localStorage.getItem('notion-theme') || 'light');
+    </script>
+
     <%- include('partials/sidebar') %>
 
     <main class="main-content">
-        <h1>Olá! 👋</h1>
-        <p style="opacity: 0.6; margin-bottom: 40px;">Aqui estão seus projetos mais recentes:</p>
+        <header style="margin-bottom: 40px;">
+            <h1>Olá! 👋</h1>
+            <p style="opacity: 0.6;">Continue de onde parou. Aqui estão seus projetos mais recentes:</p>
+        </header>
 
         <div class="notion-grid">
             <% notebooks.slice(0, 2).forEach(nb => { %>
-                <a href="/notebook/<%= nb.id %>" class="notion-card" style="border-top: 5px solid <%= nb.color %>">
-                    <strong><%= nb.name %></strong>
+                <a href="/notebook/<%= nb.id %>" class="notion-card" style="border-top: 4px solid <%= nb.color %>; min-height: 120px; display: flex; flex-direction: column; justify-content: center;">
+                    <strong style="font-size: 18px;"><%= nb.name %></strong>
+                    <span style="font-size: 12px; opacity: 0.5; margin-top: 8px;">Acessar caderno →</span>
                 </a>
             <% }) %>
         </div>
 
-        <a href="/cadernos" style="display: inline-block; margin-top: 30px; font-weight: 600; color: var(--notion-blue); text-decoration: none;">
-            Ver todos os projetos →
-        </a>
+        <div style="margin-top: 40px; border-top: 1px solid var(--notion-border); padding-top: 20px;">
+            <a href="/cadernos" class="sidebar-item" style="width: fit-content; font-weight: 600; color: var(--notion-blue);">
+                📂 Ver todos os cadernos
+            </a>
+        </div>
     </main>
 </body>
 </html>
