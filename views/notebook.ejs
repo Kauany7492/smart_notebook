@@ -1,53 +1,52 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-br" data-theme="light">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Meu Notion AI</title>
+    <title><%= notebook.name %> | Meu Notion AI</title>
     <link rel="stylesheet" href="/style.css">
 </head>
 <body>
     <aside class="sidebar">
-        <div style="font-weight: 600; padding: 10px; opacity: 0.5;">WORKSPACE</div>
+        <div class="sidebar-title">Workspace</div>
         <a href="/" class="sidebar-item">🏠 Início</a>
         
-        <button onclick="toggleDarkMode()" class="sidebar-item" id="theme-toggle">
+        <div style="margin-top: 20px;" class="sidebar-title">Meus Cadernos</div>
+        <div class="sidebar-list">
+            <% notebooks.forEach(nb => { %>
+                <a href="/notebook/<%= nb.id %>" class="sidebar-item <%= nb.id == notebook.id ? 'active' : '' %>">
+                    <span style="color: <%= nb.color %>">●</span> <%= nb.name %>
+                </a>
+            <% }) %>
+        </div>
+
+        <button onclick="toggleDarkMode()" class="sidebar-item" id="theme-toggle" style="margin-top: auto;">
             🌙 Modo Escuro
         </button>
     </aside>
 
     <main class="main-content">
-        <h1>Meus Cadernos</h1>
-        <div class="notion-grid">
-            <% notebooks.forEach(notebook => { %>
-                <a href="/notebook/<%= notebook.id %>" class="notion-card" style="border-top: 4px solid <%= notebook.color %>">
-                    <strong><%= notebook.name %></strong>
-                </a>
-            <% }) %>
-        </div>
-    </main>
+        <header>
+            <h1 style="border-left: 8px solid <%= notebook.color %>; padding-left: 16px;">
+                <%= notebook.name %>
+            </h1>
+            <p style="opacity: 0.6; font-size: 14px;">Criado em: <%= new Date(notebook.created_at).toLocaleDateString('pt-BR') %></p>
+        </header>
 
-    <script>
-        // Lógica de Troca de Tema
-        function toggleDarkMode() {
-            const html = document.documentElement;
-            const isDark = html.getAttribute('data-theme') === 'dark';
-            const newTheme = isDark ? 'light' : 'dark';
+        <section class="callout">
+            <div style="font-size: 24px;">📝</div>
+            <div>
+                <strong>Dica:</strong> Digite suas notas rápidas e cole a transcrição do áudio abaixo. O Gemini transformará tudo em um Plano de Ação estilo Notion.
+            </div>
+        </section>
+
+        <div style="margin-top: 30px;">
+            <textarea id="quickNote" class="notion-editor" placeholder="Digite aqui suas ideias ou rascunhos..."></textarea>
+            <textarea id="transcription" class="notion-editor" style="font-size: 14px; opacity: 0.7;" placeholder="Cole a transcrição do áudio aqui..."></textarea>
             
-            html.setAttribute('data-theme', newTheme);
-            localStorage.setItem('notion-theme', newTheme);
-            updateButton(newTheme);
-        }
+            <button onclick="processWithAI()" class="btn-primary" id="btnProcess">
+                ✨ Gerar Plano de Ação com IA
+            </button>
+        </div>
 
-        function updateButton(theme) {
-            const btn = document.getElementById('theme-toggle');
-            btn.innerHTML = theme === 'dark' ? '☀️ Modo Claro' : '🌙 Modo Escuro';
-        }
-
-        // Script Executado ao Carregar (Evita o flash branco)
-        const savedTheme = localStorage.getItem('notion-theme') || 'light';
-        document.documentElement.setAttribute('data-theme', savedTheme);
-        updateButton(savedTheme);
-    </script>
-</body>
-</html>
+        <hr style="margin: 40px 0; border: 0
