@@ -7,14 +7,14 @@ const { GoogleGenerativeAI } = require('@google/generative-ai');
 const app = express();
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
-// Configurações do Express
+// --- CONFIGURAÇÕES DO APP ---
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Conexão com o Banco de Dados (TiDB Cloud)
+// --- CONEXÃO COM O BANCO DE DADOS ---
 const db = mysql.createPool({
     host: process.env.DB_HOST,
     user: process.env.DB_USER,
@@ -27,9 +27,9 @@ const db = mysql.createPool({
     }
 });
 
-// --- ROTAS ---
+// --- ROTAS DO SISTEMA ---
 
-// 1. HOME: Mostra os 2 cadernos mais recentes
+// Rota 1: Home (Mostra os 2 cadernos mais recentes)
 app.get('/', async (req, res) => {
     try {
         const [rows] = await db.query('SELECT * FROM notebooks ORDER BY created_at DESC');
@@ -40,62 +40,61 @@ app.get('/', async (req, res) => {
     }
 });
 
-// 2. PÁGINA DE CADERNOS: Lista todos e permite busca
+// Rota 2: Listagem de todos os Cadernos (Com Busca)
 app.get('/cadernos', async (req, res) => {
     try {
         const [rows] = await db.query('SELECT * FROM notebooks ORDER BY created_at DESC');
         res.render('cadernos', { notebooks: rows });
     } catch (error) {
-        console.error("Erro ao listar cadernos:", error);
+        console.error("Erro ao carregar cadernos:", error);
         res.status(500).send("Erro ao carregar cadernos.");
     }
 });
 
-// 3. CRIAR NOVO CADERNO
+// Rota 3: Criar um Novo Caderno
 app.post('/notebooks/create', async (req, res) => {
     const { name, color } = req.body;
     try {
         await db.query('INSERT INTO notebooks (name, color) VALUES (?, ?)', [name, color]);
         res.redirect('/cadernos');
     } catch (error) {
-        console.error("Erro ao criar caderno:", error);
+        console.error("Erro ao criar:", error);
         res.status(500).send("Erro ao criar caderno.");
     }
 });
 
-// 4. VISUALIZAR CADERNO ESPECÍFICO
+// Rota 4: Visualizar Caderno e suas Notas
 app.get('/notebook/:id', async (req, res) => {
     try {
         const [allNotebooks] = await db.query('SELECT * FROM notebooks ORDER BY created_at DESC');
-        const [notebookResult] = await db.query('SELECT * FROM notebooks WHERE id = ?', [req.params.id]);
+        const [notebookRes] = await db.query('SELECT * FROM notebooks WHERE id = ?', [req.params.id]);
         const [notes] = await db.query('SELECT * FROM notes WHERE notebook_id = ? ORDER BY created_at DESC', [req.params.id]);
 
-        if (notebookResult.length === 0) return res.redirect('/cadernos');
+        if (notebookRes.length === 0) return res.redirect('/cadernos');
 
         res.render('notebook', { 
             notebooks: allNotebooks, 
-            notebook: notebookResult[0], 
+            notebook: notebookRes[0], 
             notes: notes 
         });
     } catch (error) {
-        console.error("Erro ao abrir caderno:", error);
+        console.error("Erro no notebook:", error);
         res.redirect('/cadernos');
     }
 });
 
-// 5. PÁGINA DE PODCAST
+// Rota 5: Modo Podcast
 app.get('/notebook/:id/podcast', async (req, res) => {
     try {
-        const [notebookResult] = await db.query('SELECT * FROM notebooks WHERE id = ?', [req.params.id]);
-        if (notebookResult.length === 0) return res.redirect('/');
-        res.render('podcast', { notebook: notebookResult[0] });
+        const [notebookRes] = await db.query('SELECT * FROM notebooks WHERE id = ?', [req.params.id]);
+        if (notebookRes.length === 0) return res.redirect('/');
+        res.render('podcast', { notebook: notebookRes[0] });
     } catch (error) {
-        console.error("Erro no podcast:", error);
         res.redirect('/');
     }
 });
 
-// 6. PROCESSAR COM IA (GEMINI)
+// Rota 6: Processar Notas com Gemini IA
 app.post('/notebooks/:id/process', async (req, res) => {
     const { transcription, quickNote } = req.body;
     const notebookId = req.params.id;
@@ -103,38 +102,34 @@ app.post('/notebooks/:id/process', async (req, res) => {
     try {
         const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
         const prompt = `
-            Você é um assistente especializado em produtividade no estilo Notion.
-            Transforme o seguinte conteúdo em um "Plano de Ação" extremamente organizado.
-            Use Tabelas para prazos, Checklists para tarefas e Negrito para termos chave.
-            Conteúdo para processar: 
-            Rascunho: ${quickNote}
-            Transcrição: ${transcription}
-            Responda APENAS com o HTML das tags internas (ex: <h3>, <ul>, <li>, <table>), sem <html> ou <body>.
+            Atue como um organizador Notion. 
+            Crie um Plano de Ação estruturado em HTML.
+            Dados: ${quickNote} | ${transcription}
+            Use tags como <h3>, <ul>, <li> e <table>.
         `;
 
         const result = await model.generateContent(prompt);
-        const aiResponse = result.response.text();
+        const aiText = result.response.text();
 
-        await db.query('INSERT INTO notes (notebook_id, content) VALUES (?, ?)', [notebookId, aiResponse]);
+        await db.query('INSERT INTO notes (notebook_id, content) VALUES (?, ?)', [notebookId, aiText]);
         res.sendStatus(200);
     } catch (error) {
-        console.error("Erro na IA Gemini:", error);
-        res.status(500).send("Erro ao processar com IA.");
+        console.error("Erro na IA:", error);
+        res.status(500).send("Erro ao processar.");
     }
 });
 
-// 7. EXCLUIR NOTA
+// Rota 7: Excluir Nota
 app.delete('/delete-note/:id', async (req, res) => {
     try {
         await db.query('DELETE FROM notes WHERE id = ?', [req.params.id]);
         res.sendStatus(200);
     } catch (error) {
-        console.error("Erro ao deletar nota:", error);
         res.status(500).send("Erro ao deletar.");
     }
 });
 
-// Porta e Inicialização
+// --- INICIALIZAÇÃO DO SERVIDOR ---
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
     console.log(`🚀 Servidor rodando em http://localhost:${PORT}`);
