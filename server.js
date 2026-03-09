@@ -63,7 +63,7 @@ app.get('/notebook/:id/podcast', async (req, res) => {
 app.post('/notebooks/:id/process', async (req, res) => {
     try {
         const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
-        const prompt = `Crie um Plano de Ação HTML para: ${req.body.quickNote} ${req.body.transcription}`;
+        const prompt = `Crie um Plano de Ação HTML: ${req.body.quickNote} ${req.body.transcription}`;
         const result = await model.generateContent(prompt);
         await db.query('INSERT INTO notes (notebook_id, content) VALUES (?, ?)', [req.params.id, result.response.text()]);
         res.sendStatus(200);
