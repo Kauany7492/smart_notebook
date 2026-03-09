@@ -3,61 +3,138 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><%= notebook.name %> | Meu Notion AI</title>
+    <title><%= notebook.name %> | Planner AI</title>
     <link rel="stylesheet" href="/style.css">
 </head>
 <body>
     <script>
-    // Esse código roda antes de qualquer outra coisa
-    const savedTheme = localStorage.getItem('notion-theme') || 'light';
-    document.documentElement.setAttribute('data-theme', savedTheme);
+        const savedTheme = localStorage.getItem('notion-theme') || 'light';
+        document.documentElement.setAttribute('data-theme', savedTheme);
     </script>
+
     <aside class="sidebar">
-        <div class="sidebar-title">Workspace</div>
+        <div style="opacity: 0.5; font-size: 12px; padding: 10px;">WORKSPACE</div>
         <a href="/" class="sidebar-item">🏠 Início</a>
-    
-        <a href="/notebook/<%= notebook.id %>/podcast" class="sidebar-item" style="color: var(--notion-blue); font-weight: 500;">
-            🎙️ Modo Podcast
-        </a>
+        <a href="/notebook/<%= notebook.id %>/podcast" class="sidebar-item">🎙️ Modo Podcast</a>
+        
+        <div style="margin-top: 20px; opacity: 0.5; font-size: 12px; padding: 10px;">CADERNOS</div>
+        <% notebooks.forEach(nb => { %>
+            <a href="/notebook/<%= nb.id %>" class="sidebar-item <%= nb.id == notebook.id ? 'active' : '' %>">
+                <span style="color: <%= nb.color %>">●</span> <%= nb.name %>
+            </a>
+        <% }) %>
 
-        <div style="margin-top: 24px;" class="sidebar-title">Cadernos</div>
-        <div class="sidebar-list">
-            <% notebooks.forEach(nb => { %>
-                <a href="/notebook/<%= nb.id %>" class="sidebar-item <%= nb.id == notebook.id ? 'active' : '' %>">
-                    <span style="color: <%= nb.color %>">●</span> <%= nb.name %>
-                </a>
-            <% }) %>
-        </div>
-
-        <button onclick="toggleDarkMode()" class="sidebar-item" id="theme-toggle" style="margin-top: auto; border: none; background: none; width: 100%;">
+        <button onclick="toggleDarkMode()" class="sidebar-item" id="theme-toggle" style="margin-top: auto;">
             🌙 Modo Escuro
         </button>
     </aside>
+
     <main class="main-content">
-        <header>
-            <h1 style="border-left: 8px solid <%= notebook.color %>; padding-left: 16px;">
-                <%= notebook.name %>
-            </h1>
-            <p style="opacity: 0.6; font-size: 14px;">Criado em: <%= new Date(notebook.created_at).toLocaleDateString('pt-BR') %></p>
-        </header>
-
-        <section class="callout">
-            <div style="font-size: 24px;">📝</div>
-            <div>
-                <strong>Dica:</strong> Digite suas notas rápidas e cole a transcrição do áudio abaixo. O Gemini transformará tudo em um Plano de Ação estilo Notion.
-            </div>
-        </section>
-
-        <div style="margin-top: 30px;">
-            <textarea id="quickNote" class="notion-editor" placeholder="Digite aqui suas ideias ou rascunhos..."></textarea>
-            <textarea id="transcription" class="notion-editor" style="font-size: 14px; opacity: 0.7;" placeholder="Cole a transcrição do áudio aqui..."></textarea>
-            
-            <button onclick="processWithAI()" class="btn-primary" id="btnProcess">
-                ✨ Gerar Plano de Ação com IA
-            </button>
+        <h1 style="border-left: 8px solid <%= notebook.color %>; padding-left: 15px;"><%= notebook.name %></h1>
+        
+        <div class="callout">
+            <span>💡</span>
+            <div>Use o microfone para ditar ideias ou capture áudio de outras abas para transcrever reuniões/vídeos.</div>
         </div>
 
-        <hr style="margin: 40px 0; border: 0
+        <textarea id="quickNote" class="notion-editor" placeholder="Rascunho rápido..."></textarea>
+        
+        <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+            <button onclick="toggleMic()" class="sidebar-item" id="micBtn" style="border: 1px solid var(--notion-border); width: auto;">
+                🎤 Ouvir Microfone
+            </button>
+            <button onclick="startTabAudio()" class="sidebar-item" style="border: 1px solid var(--notion-border); width: auto;">
+                🌐 Ouvir Aba
+            </button>
+            <div id="statusIcon" style="display: none; align-items: center; color: var(--notion-blue); font-size: 13px;">
+                <span class="pulse"></span> Gravando...
+            </div>
+        </div>
 
+        <textarea id="transcription" class="notion-editor" style="font-size: 14px; opacity: 0.8; min-height: 120px;" placeholder="A transcrição aparecerá aqui..."></textarea>
+        
+        <button onclick="processWithAI()" class="btn-primary" id="btnProcess">✨ Gerar Plano de Ação</button>
 
+        <hr style="margin: 40px 0; border: 0; border-top: 1px solid var(--notion-border);">
 
+        <div id="notes-container">
+            <% notes.forEach(note => { %>
+                <div class="notion-card" style="margin-bottom: 20px;">
+                    <%- note.content %>
+                </div>
+            <% }) %>
+        </div>
+    </main>
+
+    <script>
+        let recognition;
+        let isListening = false;
+
+        function toggleMic() {
+            if (isListening) {
+                recognition.stop();
+                return;
+            }
+
+            if (!('webkitSpeechRecognition' in window)) return alert("Navegador não suportado.");
+
+            recognition = new webkitSpeechRecognition();
+            recognition.lang = 'pt-BR';
+            recognition.continuous = true;
+            recognition.interimResults = true;
+
+            recognition.onstart = () => {
+                isListening = true;
+                document.getElementById('statusIcon').style.display = 'flex';
+                document.getElementById('micBtn').innerHTML = "⏹️ Parar Ouvinte";
+            };
+
+            recognition.onresult = (event) => {
+                let text = '';
+                for (let i = event.resultIndex; i < event.results.length; ++i) {
+                    if (event.results[i].isFinal) text += event.results[i][0].transcript;
+                }
+                document.getElementById('transcription').value += text + ' ';
+            };
+
+            recognition.onend = () => {
+                isListening = false;
+                document.getElementById('statusIcon').style.display = 'none';
+                document.getElementById('micBtn').innerHTML = "🎤 Ouvir Microfone";
+            };
+
+            recognition.start();
+        }
+
+        async function startTabAudio() {
+            try {
+                await navigator.mediaDevices.getDisplayMedia({ video: true, audio: true });
+                alert("Captura de aba iniciada. O áudio deve sair pelos alto-falantes para ser transcrito.");
+                if(!isListening) toggleMic();
+            } catch (err) { console.error(err); }
+        }
+
+        async function processWithAI() {
+            const btn = document.getElementById('btnProcess');
+            btn.innerText = "⏳ Processando...";
+            const transcription = document.getElementById('transcription').value;
+            const quickNote = document.getElementById('quickNote').value;
+
+            const res = await fetch('/notebook/<%= notebook.id %>/process', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ transcription, quickNote })
+            });
+
+            if (res.ok) window.location.reload();
+        }
+
+        function toggleDarkMode() {
+            const html = document.documentElement;
+            const theme = html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+            html.setAttribute('data-theme', theme);
+            localStorage.setItem('notion-theme', theme);
+        }
+    </script>
+</body>
+</html>
