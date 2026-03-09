@@ -8,10 +8,10 @@
 </head>
 <body>
     <script>
-        // Executa IMEDIATAMENTE antes de renderizar o resto da página
-        const theme = localStorage.getItem('notion-theme') || 'light';
-        document.documentElement.setAttribute('data-theme', theme);
-    </script
+    // Esse código roda antes de qualquer outra coisa
+    const savedTheme = localStorage.getItem('notion-theme') || 'light';
+    document.documentElement.setAttribute('data-theme', savedTheme);
+    </script>
     <aside class="sidebar">
         <div class="sidebar-title">Workspace</div>
         <a href="/" class="sidebar-item">🏠 Início</a>
@@ -58,5 +58,6 @@
         </div>
 
         <hr style="margin: 40px 0; border: 0
+
 
 
